@@ -56,16 +56,67 @@ class QuoteScreen extends StatefulWidget {
 }
 
 class _QuoteScreenState extends State<QuoteScreen> {
+  Quote quote = new Quote();
+  Author author = new Author();
+
+  Future get(String baseUrl) async {
+    final response = await http.get('$baseUrl');
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw response;
+  }
+
+  Future fetchData() async {
+    final responseQuote = await http
+        .get('https://run.mocky.io/v3/bb933fac-18fa-407d-bbe2-74f5699161bf/');
+
+    final jsonQuote = jsonDecode(responseQuote.body);
+    List<Quote> quotes = List<Quote>();
+
+    for (int i = 0; i < jsonQuote['quotes'].length; i++) {
+      Quote temp = Quote.fromJson(jsonQuote['quotes'][i]);
+      if (temp.authorId == 'x9mali') quotes.add(temp);
+    }
+
+    Quote quote = new Quote();
+    int reader = 0;
+    quotes.forEach((element) {
+      if (reader == 0) {
+        reader = element.read;
+        quote = element;
+      } else if (element.read > reader) {
+        reader = element.read;
+        quote = element;
+      }
+    });
+
+    return quote;
+  }
+
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: fetchData(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            quote = snapshot.data;
+            return _buildMainScreen();
+          }
+          return _buildFetchingDataScreen();
+        });
+  }
+
+  Scaffold _buildMainScreen() {
     return Scaffold(
-        appBar: AppBar(title: Text('The title goes here')),
+        appBar: AppBar(title: Text('Most Popular Quote By Author')),
         body: Container(
           padding: EdgeInsets.all(15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text('The quote goes here',
+              Text(quote.quote,
                   textAlign: TextAlign.justify,
                   style: TextStyle(
                     fontSize: 22,
@@ -74,10 +125,25 @@ class _QuoteScreenState extends State<QuoteScreen> {
               SizedBox(
                 height: 20,
               ),
-              Text('Additional info about the quote goes here',
+              Text('This quote has been read ${quote.read} times',
                   style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic)),
             ],
           ),
         ));
+  }
+
+  Scaffold _buildFetchingDataScreen() {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CircularProgressIndicator(),
+            SizedBox(height: 50),
+            Text('Fetching data in progress'),
+          ],
+        ),
+      ),
+    );
   }
 }
