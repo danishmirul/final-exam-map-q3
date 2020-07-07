@@ -1,0 +1,13 @@
+Question (a):
+JSON deserialization is a process of converting data from JSON into Map.
+This is useful because of when the client receive the data converted from JSON into Map,
+we could use it so that we could implements the data into the application.
+In Flutter we could implements Map to show the data or to process the data.
+
+
+Question (b):
+futurebuilder, this is because this widget will wait for the data to be retrieve in snapshot. 
+If the snapshot is empty, we could use it to make our app to show the loading screen.
+Meanwhile when the snapshot.data retrieve data we will make process for it instead of showing loading screen.
+
+
