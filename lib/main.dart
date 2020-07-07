@@ -72,6 +72,9 @@ class _QuoteScreenState extends State<QuoteScreen> {
     final responseQuote = await http
         .get('https://run.mocky.io/v3/bb933fac-18fa-407d-bbe2-74f5699161bf/');
 
+    final responseAuthor = await http
+        .get('https://run.mocky.io/v3/505975b0-48fe-4a20-9d64-dc2c5f085891/');
+
     final jsonQuote = jsonDecode(responseQuote.body);
     List<Quote> quotes = List<Quote>();
 
@@ -92,7 +95,13 @@ class _QuoteScreenState extends State<QuoteScreen> {
       }
     });
 
-    return quote;
+    final jsonAuthor = jsonDecode(responseAuthor.body);
+    Author author = new Author();
+
+    for (int i = 0; i < jsonAuthor['authors'].length; i++) {
+      author = Author.fromJson(jsonAuthor['authors'][i]);
+      if (author.id == 'x9mali') return {'quote': quote, 'author': author};
+    }
   }
 
   @override
@@ -101,7 +110,8 @@ class _QuoteScreenState extends State<QuoteScreen> {
         future: fetchData(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            quote = snapshot.data;
+            quote = snapshot.data['quote'];
+            author = snapshot.data['author'];
             return _buildMainScreen();
           }
           return _buildFetchingDataScreen();
@@ -110,7 +120,7 @@ class _QuoteScreenState extends State<QuoteScreen> {
 
   Scaffold _buildMainScreen() {
     return Scaffold(
-        appBar: AppBar(title: Text('Most Popular Quote By Author')),
+        appBar: AppBar(title: Text('Most Popular Quote By ${author.name}')),
         body: Container(
           padding: EdgeInsets.all(15),
           child: Column(
